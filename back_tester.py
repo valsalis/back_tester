@@ -1,4 +1,5 @@
 # !pip install yfinance  # had to run this line to install yfinance
+import library as lib
 import yfinance as yf
 import matplotlib.pyplot as plt
 
@@ -71,7 +72,7 @@ class BackTester():
                 date = index.date()
                 # print(type(index.date()))
                 # print(row)
-                candlestick = Candlestick(row['Open'], row['Low'], row['High'], row['Close'])
+                candlestick = lib.Candlestick(row['Open'], row['Low'], row['High'], row['Close'])
                 strategy.update(date, candlestick)
                 
         # for index, row in self.data.iterrows():
