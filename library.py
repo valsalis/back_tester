@@ -1,6 +1,6 @@
 class Candlestick():
     
-    def __init__(self, open_price, lowest_price, highest_price, close_price):
+    def __init__(self, open_price: float, lowest_price: float, highest_price: float, close_price: float):
         self.open_price = open_price
         self.lowest_price = lowest_price
         self.highest_price = highest_price
