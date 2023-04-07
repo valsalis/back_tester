@@ -19,30 +19,42 @@ class Trade():
 
 
 class Strategy():
-    def __init__(self, ticker):
+    def __init__(self, ticker, number_of_days):
         self.ticker = ticker
-        self.day1 = []
-        self.day2 = []
-        self.day3 = []
-        self.day4 = []
-        self.counter = 0
+        self.days = []
+        self.number_of_days = number_of_days
         
     def update(self, date, candlestick):
-        self.day1 = self.day2
-        self.day2 = self.day3
-        self.day3 = self.day4
-        self.day4 = [date, candlestick]
-        
-        if self.counter < 4:
-            self.counter += 1
-        if self.counter >= 4:
-            if self.day2[1].is_hammer(): 
-                print(f'hammer, ticker = {self.ticker}, date = {self.day2[0]}')
-                if self.day1[1].highest_price > self.day2[1].highest_price:
-                    if self.day3[1].lowest_price > min(self.day2[1].open_price, self.day2[1].close_price):
-                        if self.day4[1].highest_price > self.day3[1].highest_price:
-                            print(f"ticker: {self.ticker}, date: {date}, BUY")
+        if len(self.days) < self.number_of_days:
+            self.days.append([date, candlestick])
+        else:
+            del self.days[0]
+            self.days.append([date, candlestick])
+            
+            if self.days[-3][1].is_hammer(): 
+                if self.price_excursion_of_these_two_days_is_comparable_in_percent(self.days[-3][1], self.days[-4][1], 50):
+                    # print(f'hammer comparable, ticker = {self.ticker}, date = {self.days[-3][0]}')
+                    if self.is_local_minimum_in_the_past_x_days(self.number_of_days - 3):
+                        if self.days[-4][1].highest_price > self.days[-3][1].highest_price:
+                            if self.days[-2][1].lowest_price > min(self.days[-3][1].open_price, self.days[-3][1].close_price):
+                                if self.days[-1][1].highest_price > self.days[-2][1].highest_price:
+                                    print(f"ticker: {self.ticker}, date: {date}, BUY")
     
+    def price_excursion_of_these_two_days_is_comparable_in_percent(self, day1, day2, percent):
+        max_price_excursion_day1 = day1.highest_price - day1.lowest_price
+        max_price_excursion_day2 = day2.highest_price - day2.lowest_price
+        max_price_excursion = max(max_price_excursion_day1, max_price_excursion_day2)
+        if max_price_excursion_day1 / max_price_excursion * 100 > percent and max_price_excursion_day2 / max_price_excursion * 100 > percent:
+            return True
+        return False
+    
+    def is_local_minimum_in_the_past_x_days(self, number_of_days):
+        reference_minimum = self.days[-3][1].lowest_price
+        for day_idx in range(number_of_days):
+            if self.days[-3 - day_idx][1].lowest_price < reference_minimum:
+                return False
+        return True
+            
         
 class BackTester():
     
@@ -67,7 +79,7 @@ class BackTester():
         
     def run(self):
         for ticker in self.tickers:
-            strategy = Strategy(ticker)
+            strategy = Strategy(ticker, 10)
             for index, row in self.data[ticker].iterrows():
                 date = index.date()
                 # print(type(index.date()))
@@ -86,8 +98,9 @@ class BackTester():
         
         
 #%%
-stock_tickers = ['AAPL','MSFT','TSLA','MMM']
-data = yf.download(stock_tickers, group_by="Ticker", start='2021-01-01')
+stock_tickers = ['AAPL','MSFT','TSLA','MMM','MSTR']
+stock_tickers = ['MSTR','SPY','GOOGL','NFLX','AMZN','NVDA','META']
+data = yf.download(stock_tickers, group_by="Ticker", start='2020-01-01')
 
 # data2 = {}
 # index_list = []
