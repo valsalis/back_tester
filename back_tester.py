@@ -40,7 +40,7 @@ class Strategy():
             if self.days[-3].is_hammer(): 
                 if self.price_excursion_of_these_two_days_is_comparable_in_percent(self.days[-3], self.days[-4], 50):
                     # print(f'hammer comparable, ticker = {self.ticker}, date = {self.days[-3]}')
-                    if self.is_local_minimum_in_the_past_x_days(self.number_of_days - 3):
+                    if self.is_local_minimum_of_the_past_x_days(self.number_of_days - 3):
                         if self.days[-4].highest_price > self.days[-3].highest_price:
                             if self.days[-2].lowest_price > min(self.days[-3].open_price, self.days[-3].close_price):
                                 if self.days[-1].highest_price > self.days[-2].highest_price:
@@ -56,7 +56,7 @@ class Strategy():
             return True
         return False
     
-    def is_local_minimum_in_the_past_x_days(self, number_of_days):
+    def is_local_minimum_of_the_past_x_days(self, number_of_days):
         reference_minimum = self.days[-3].lowest_price
         for day_idx in range(number_of_days):
             if self.days[-3 - day_idx].lowest_price < reference_minimum:
