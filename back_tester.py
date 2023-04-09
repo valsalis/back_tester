@@ -1,7 +1,13 @@
 # !pip install yfinance  # had to run this line to install yfinance
 import library as lib
 import yfinance as yf
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import datetime
+import plotly.graph_objects as go
+
+import plotly.io as pio
+pio.renderers.default = 'svg'
+# pio.renderers.default = 'browser'
 
 #%%    
 
@@ -12,10 +18,10 @@ class Trade():
         self.buy_sell = 'BUY'
         self.open_date = open_date
         self.open_price = open_price
-        self.stop_loss
-        self.take_profit
-        self.close_date
-        self.close_price
+        self.stop_loss = 0
+        self.take_profit = 0
+        self.close_date = 0
+        self.close_price = 0
 
 
 class Strategy():
@@ -38,7 +44,9 @@ class Strategy():
                         if self.days[-4].highest_price > self.days[-3].highest_price:
                             if self.days[-2].lowest_price > min(self.days[-3].open_price, self.days[-3].close_price):
                                 if self.days[-1].highest_price > self.days[-2].highest_price:
-                                    print(f"ticker: {self.ticker}, date: {candlestick.date}, BUY")
+                                    # print(f"ticker: {self.ticker}, date: {candlestick.date}, BUY")
+                                    new_trade = Trade(self.ticker, 'BUY', candlestick.date, self.days[-2].highest_price)
+                                    trades.append(new_trade)
     
     def price_excursion_of_these_two_days_is_comparable_in_percent(self, day1, day2, percent):
         max_price_excursion_day1 = day1.highest_price - day1.lowest_price
@@ -100,9 +108,11 @@ class BackTester():
         
 #%%
 # stock_tickers = ['AAPL','MSFT','TSLA','MMM','MSTR']
-stock_tickers = ['MSTR','SPY','GOOGL','NFLX','AMZN','NVDA','META']
-# stock_tickers = ['MSTR','SPY']
+# stock_tickers = ['MSTR','SPY','GOOGL','NFLX','AMZN','NVDA','META']
+stock_tickers = ['MSTR','SPY']
 data = yf.download(stock_tickers, group_by="Ticker", start='2020-01-01')
+
+trades = []
 
 # data2 = {}
 # index_list = []
@@ -115,5 +125,19 @@ data = yf.download(stock_tickers, group_by="Ticker", start='2020-01-01')
 back_tester = BackTester(1000, data)
 back_tester.run()
 
+for trade in trades:
+    print(f'ticker: {trade.ticker}, date: {trade.open_date}, {trade.buy_sell}')
+    plot_start_date = trade.open_date - datetime.timedelta(days=50)
+    print(plot_start_date)
+    plot_end_date = trade.open_date + datetime.timedelta(days=50)
+    data = yf.download(trade.ticker, start=plot_start_date, end=plot_end_date)
+    
+    fig = go.Figure(data=[go.Candlestick(x=data.index,
+                                     open=data['Open'],
+                                     high=data['High'],
+                                     low=data['Low'],
+                                     close=data['Close'])])
+
+    fig.show()
 
 
