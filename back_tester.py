@@ -24,21 +24,21 @@ class Strategy():
         self.days = []
         self.number_of_days = number_of_days
         
-    def update(self, date, candlestick):
+    def update(self, candlestick):
         if len(self.days) < self.number_of_days:
-            self.days.append([date, candlestick])
+            self.days.append(candlestick)
         else:
             del self.days[0]
-            self.days.append([date, candlestick])
+            self.days.append(candlestick)
             
-            if self.days[-3][1].is_hammer(): 
-                if self.price_excursion_of_these_two_days_is_comparable_in_percent(self.days[-3][1], self.days[-4][1], 50):
-                    # print(f'hammer comparable, ticker = {self.ticker}, date = {self.days[-3][0]}')
+            if self.days[-3].is_hammer(): 
+                if self.price_excursion_of_these_two_days_is_comparable_in_percent(self.days[-3], self.days[-4], 50):
+                    # print(f'hammer comparable, ticker = {self.ticker}, date = {self.days[-3]}')
                     if self.is_local_minimum_in_the_past_x_days(self.number_of_days - 3):
-                        if self.days[-4][1].highest_price > self.days[-3][1].highest_price:
-                            if self.days[-2][1].lowest_price > min(self.days[-3][1].open_price, self.days[-3][1].close_price):
-                                if self.days[-1][1].highest_price > self.days[-2][1].highest_price:
-                                    print(f"ticker: {self.ticker}, date: {date}, BUY")
+                        if self.days[-4].highest_price > self.days[-3].highest_price:
+                            if self.days[-2].lowest_price > min(self.days[-3].open_price, self.days[-3].close_price):
+                                if self.days[-1].highest_price > self.days[-2].highest_price:
+                                    print(f"ticker: {self.ticker}, date: {candlestick.date}, BUY")
     
     def price_excursion_of_these_two_days_is_comparable_in_percent(self, day1, day2, percent):
         max_price_excursion_day1 = day1.highest_price - day1.lowest_price
@@ -49,9 +49,9 @@ class Strategy():
         return False
     
     def is_local_minimum_in_the_past_x_days(self, number_of_days):
-        reference_minimum = self.days[-3][1].lowest_price
+        reference_minimum = self.days[-3].lowest_price
         for day_idx in range(number_of_days):
-            if self.days[-3 - day_idx][1].lowest_price < reference_minimum:
+            if self.days[-3 - day_idx].lowest_price < reference_minimum:
                 return False
         return True
             
@@ -81,11 +81,12 @@ class BackTester():
         for ticker in self.tickers:
             strategy = Strategy(ticker, 10)
             for index, row in self.data[ticker].iterrows():
-                date = index.date()
-                # print(type(index.date()))
+                candlestick = lib.Candlestick(row['Open'], row['Low'], row['High'], row['Close'], str(index.date()))
+                strategy.update(candlestick)
+                # date = str(index.date())
+                # print(type(date))
+                # print(date)
                 # print(row)
-                candlestick = lib.Candlestick(row['Open'], row['Low'], row['High'], row['Close'])
-                strategy.update(date, candlestick)
                 
         # for index, row in self.data.iterrows():
         #     for ticker in self.tickers:
@@ -98,8 +99,9 @@ class BackTester():
         
         
 #%%
-stock_tickers = ['AAPL','MSFT','TSLA','MMM','MSTR']
+# stock_tickers = ['AAPL','MSFT','TSLA','MMM','MSTR']
 stock_tickers = ['MSTR','SPY','GOOGL','NFLX','AMZN','NVDA','META']
+# stock_tickers = ['MSTR','SPY']
 data = yf.download(stock_tickers, group_by="Ticker", start='2020-01-01')
 
 # data2 = {}
