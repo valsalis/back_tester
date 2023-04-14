@@ -32,3 +32,8 @@ class Candlestick():
     
     def open_price_is_within_x_percent_of_the_highest_price(self, percent: int) -> bool:
         return (self.highest_price - self.open_price) / (self.highest_price - self.lowest_price) <= (percent * 0.01)
+
+
+# def moving_average_calculation(dataframe, period_as_number_of_days):
+#     dataframe[f'simple_moving_average_{period_as_number_of_days}'] = dataframe.Close.rolling(period_as_number_of_days).mean()
+

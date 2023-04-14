@@ -125,7 +125,15 @@ trades = []
 back_tester = BackTester(1000, data)
 back_tester.run()
 
+close_price_above_open_price = True  # for debug of rectangle plot
 for trade in trades:
+    trade.close_date = trade.open_date + datetime.timedelta(days=10)  # for debug of rectangle plot
+    if close_price_above_open_price:  # for debug of rectangle plot
+        trade.close_price = trade.open_price * 1.1  # for debug of rectangle plot
+        close_price_above_open_price = False  # for debug of rectangle plot
+    else:  # for debug of rectangle plot
+        trade.close_price = trade.open_price * 0.9  # for debug of rectangle plot
+        close_price_above_open_price = False  # for debug of rectangle plot
     print(f'ticker: {trade.ticker}, date: {trade.open_date}, {trade.buy_sell}')
     plot_start_date = trade.open_date - datetime.timedelta(days=50)
     print(plot_start_date)
@@ -137,6 +145,29 @@ for trade in trades:
                                      high=data['High'],
                                      low=data['Low'],
                                      close=data['Close'])])
+    
+    fig.update_layout(xaxis_rangeslider_visible=False)
+    
+    rectangle_color = 'Green'
+    if trade.buy_sell == 'BUY':
+        if trade.close_price >= trade.open_price:
+            rectangle_color = 'Green'
+        else:
+            rectangle_color = 'Red'
+    else:  # trade.buy_sell == 'SELL':
+        if trade.close_price <= trade.open_price:
+            rectangle_color = 'Green'
+        else:
+            rectangle_color = 'Red'
+    fig.add_shape(type='rect', x0=trade.open_date, y0=trade.open_price, x1=trade.close_date, y1=trade.close_price, 
+                  line=dict(color='RoyalBlue'), fillcolor=rectangle_color, opacity=0.2)
+    
+    #  boiler plate to add percentage change value on chart
+    # fig.add_trace(go.Scatter(
+    # x=[1.5, 4.5],
+    # y=[0.75, 0.75],
+    # text=["Unfilled Rectangle", "Filled Rectangle"],
+    # mode="text",))
 
     fig.show()
 
