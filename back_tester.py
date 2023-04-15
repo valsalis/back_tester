@@ -163,11 +163,13 @@ for trade in trades:
                   line=dict(color='RoyalBlue'), fillcolor=rectangle_color, opacity=0.2)
     
     #  boiler plate to add percentage change value on chart
-    # fig.add_trace(go.Scatter(
-    # x=[1.5, 4.5],
-    # y=[0.75, 0.75],
-    # text=["Unfilled Rectangle", "Filled Rectangle"],
-    # mode="text",))
+    fig.add_trace(go.Scatter(
+    x=[trade.open_date + (trade.close_date - trade.open_date) / 2],
+    y=[trade.close_price],
+    text=[f'{round((trade.close_price - trade.open_price) / trade.open_price * 100, 2)} %'],
+    mode="text",))
+    
+    fig.update_layout(showlegend=False)
 
     fig.show()
 
